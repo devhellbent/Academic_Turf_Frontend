@@ -1,0 +1,122 @@
+.card-div {
+    width: 90vw;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.small-card-div {
+    width: 80vw;
+    margin: 5vh auto;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-bottom: 10vh;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 220px; /* Set fixed width */
+    background-color: var(--background);
+    border: 4px solid var(--primary);
+    border-radius: 20px;
+    transition: all 500ms ease-in-out;
+    box-shadow: 2px 2px 5px var(--tertiary-3);
+}
+
+.small-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    width: 150px; /* Set fixed width for smaller cards */
+    background-color: var(--background);
+    border: 4px solid var(--primary);
+    border-radius: 20px;
+    transition: all 500ms ease-in-out;
+    box-shadow: 2px 2px 5px var(--tertiary-3);
+}
+
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 5px 5px 5px var(--tertiary-3);
+    background-color: var(--primary);
+}
+
+.small-card:hover {
+    transform: scale(1.01);
+    box-shadow: 5px 5px 5px var(--tertiary-3);
+}
+
+.buy-btn {
+    width: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 20px;
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    border-radius: 50px;
+    color: var(--tertiary-3);
+    background-color: var(--secondary-dark);
+    transition: all 500ms ease;
+    cursor: pointer;
+}
+
+.card-icon {
+    font-size: 40px;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.card-text {
+    font-size: 18px;
+    text-align: center;
+}
+
+.card-read-more {
+    font-weight: 600;
+}
+
+/* Responsive styling */
+@media (max-width: 600px) {
+    .card-div {
+        width: fit-content;
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .card {
+        padding: 5px;
+        border-radius: 10px;
+        width: 150px; /* Ensure consistent width */
+    }
+
+    .card-icon {
+        font-size: 28px;
+    }
+
+    .card-title {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .card {
+        width: 120px; /* Slightly smaller width for very small screens */
+    }
+}

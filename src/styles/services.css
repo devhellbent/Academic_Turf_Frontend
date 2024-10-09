@@ -1,0 +1,22 @@
+.services {
+    padding-block: 10vh 5vh;
+}
+
+.services .services-heading {
+    font-size: 50px;
+    text-align: center;
+    line-height: 45px;
+}
+
+@media (max-width: 500px) {
+    .services {
+        padding-block: 20px;
+    }
+
+    .services .services-heading {
+        font-size: 36px;
+        line-height: 40px;
+        text-align: center;
+    }
+    
+}
