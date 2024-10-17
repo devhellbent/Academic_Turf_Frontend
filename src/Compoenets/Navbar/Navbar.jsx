@@ -104,6 +104,15 @@ const Navbar = () => {
             <div
               onClick={(e) => {
                 e.preventDefault();
+                navigate("/overseas-education");
+              }}
+              className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
+            >
+              Overseas Education
+            </div>
+            <div
+              onClick={(e) => {
+                e.preventDefault();
                 navigate("/my-posts");
               }}
               className="text-gray-900 cursor-pointer  hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"

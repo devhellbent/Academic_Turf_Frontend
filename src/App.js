@@ -19,6 +19,7 @@ import EditProfile from "./Compoenets/Profile/ProfileEdit/EditProfile";
 import AddEditExperience from "./Compoenets/Profile/ProfileEdit/Experience/AddEditExperience";
 import AddEditSkill from "./Compoenets/Profile/ProfileEdit/Skills/AddEditSkill";
 import AddCertificate from "./Compoenets/Profile/ProfileEdit/Certificate/AddCertificate";
+import OverseasEducation from "./Compoenets/OverseasEducation/OverseasEducation";
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
             <Route path="/signup" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/post-requiremnt" element={<PostRequirement />} />
+            <Route path="/overseas-education" element={<OverseasEducation />} />
             <Route path="/resume-check" element={<ResumeCheck />} />
 
 
