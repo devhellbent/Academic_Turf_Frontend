@@ -95,7 +95,7 @@ const Navbar = () => {
             <div
               onClick={(e) => {
                 e.preventDefault();
-                navigate("/post-requirements");
+                navigate("/post-requiremnt");
               }}
               className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
             >
@@ -153,7 +153,7 @@ const Navbar = () => {
                   <div
                     id="userDropdown"
                     ref={dropdownRef}
-                    className="absolute z-50 bg-white  divide-y divide-gray-100 rounded-lg shadow-lg w-64 dark:bg-gray-700 dark:divide-gray-600 transition-all duration-300 ease-in-out"
+                    className="absolute z-50 bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-64 transition-all duration-300 ease-in-out"
                     style={{
                       top: "50px", // Adjust the dropdown position
                       left: window.innerWidth <= 640 ? "-80px" : "-210px", // Responsive left alignment

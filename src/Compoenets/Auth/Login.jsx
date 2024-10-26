@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast"; // Importing toast for notifications
-
+import toast from "react-hot-toast";
+import { GoogleLogin } from "@react-oauth/google";
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [newUserData, setNewUserData] = useState(null);
+  const [selectedRole, setSelectedRole] = useState('');
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -18,7 +20,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/auth/signin`,
+        `${process.env.REACT_APP_API_URL}/auth/signin`,
         {
           method: "POST",
           headers: {
@@ -31,7 +33,6 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store all data in a single object
         const userData = {
           userid: data.id,
           token: data.accessToken,
@@ -41,19 +42,111 @@ function Login() {
           profilePicture: data.profilePicture,
         };
 
-        // Store the object as a string in localStorage
         localStorage.setItem("userData", JSON.stringify(userData));
         navigate("/dashboard");
-        toast.success("Login successful!"); // Success toast
+        toast.success("Login successful!");
       } else {
         setError(data.message || "Login failed");
-        toast.error(data.message || "Login failed"); // Error toast
+        toast.error(data.message || "Login failed");
       }
     } catch (err) {
       setError("Something went wrong, please try again later");
-      toast.error("Something went wrong, please try again later"); // Error toast for catch block
+      toast.error("Something went wrong, please try again later");
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    console.log(credentialResponse);
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/auth/google-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ credential: credentialResponse.credential }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        if (data.isNewUser) {
+          setIsNewUser(true);
+          setNewUserData(data);
+        } else {
+          const userData = {
+            userid: data.id,
+            token: data.accessToken,
+            email: data.email,
+            name: data.name,
+            role: data.role,
+            profilePicture: data.profilePicture,
+          };
+
+          localStorage.setItem("userData", JSON.stringify(userData));
+          navigate("/dashboard");
+          toast.success("Google login successful!");
+        }
+      } else {
+        setError(data.message || "Google login failed");
+        toast.error(data.message || "Google login failed");
+      }
+    } catch (err) {
+      setError("Something went wrong, please try again later");
+      toast.error("Something went wrong, please try again later");
+    }
+  };
+
+  const handleRoleSelection = async () => {
+    if (!selectedRole) {
+      toast.error("Please select a role");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/auth/complete-google-signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: newUserData.email,
+            name: newUserData.name,
+            profilePicture: newUserData.profilePicture,
+            role: selectedRole,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const userData = {
+          userid: data.id,
+          token: data.accessToken,
+          email: data.email,
+          name: data.name,
+          role: data.role,
+          profilePicture: data.profilePicture,
+        };
+
+        localStorage.setItem("userData", JSON.stringify(userData));
+        navigate("/dashboard");
+        toast.success("Signup successful!");
+      } else {
+        setError(data.message || "Signup failed");
+        toast.error(data.message || "Signup failed");
+      }
+    } catch (err) {
+      setError("Something went wrong, please try again later");
+      toast.error("Something went wrong, please try again later");
+    }
+  };
+
 
   return (
     <div>
@@ -133,8 +226,11 @@ function Login() {
                 </div>
                 <hr />
               </div>
-              <div className="grid gap-4">
-                <button className="whitespace-nowrap shadow bg-white rounded-md text-md font-seminold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-gray-100 hover:text-accent-foreground h-10 px-4 py-2 flex items-center justify-center gap-2">
+              <div className="flex justify-center gap-4">
+                {/* <button
+                 
+                  className="whitespace-nowrap shadow bg-white rounded-md text-md font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-gray-100 hover:text-accent-foreground h-10 px-4 py-2 flex items-center justify-center gap-2"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 48 48"
@@ -159,7 +255,43 @@ function Login() {
                     />
                   </svg>
                   Sign in with Google
-                </button>
+                </button> */}
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    console.log("Login Failed");
+                  }}
+                />
+                  {isNewUser && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+                      <h3 className="text-xl font-bold mb-4">
+                        Welcome! Please select your role
+                      </h3>
+                      <p className="mb-4">
+                        As a new user, we need to know what type of account
+                        you'd like to create.
+                      </p>
+                      <select
+                        className="w-full p-2 mb-4 border border-gray-300 rounded"
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                      >
+                        <option value="">Select your role</option>
+                        <option value="Student Client">Student Client</option>
+                        <option value="Service Provider">
+                          Service Provider
+                        </option>
+                      </select>
+                      <button
+                        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                        onClick={handleRoleSelection}
+                      >
+                        Complete Signup
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>

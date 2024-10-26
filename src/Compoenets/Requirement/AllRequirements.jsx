@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, useRef } from "react";
+import skillsData from "../../JsonData/SkillsList.json";
+import countriesData from "../../JsonData/countries.json";
 // Function to truncate text for preview
 function truncateText(text, wordLimit) {
   if (!text) return ""; // Return an empty string if text is undefined or null
@@ -8,6 +9,9 @@ function truncateText(text, wordLimit) {
     ? words.slice(0, wordLimit).join(" ") + "..."
     : text;
 }
+
+
+
 
 const getCurrencyIcon = (currency) => {
   switch (currency) {
@@ -81,10 +85,9 @@ const getCurrencyIcon = (currency) => {
   }
 };
 
-// Modal Component
 const Modal = ({ post, isOpen, onClose }) => {
   if (!isOpen) return null;
-  const wordLimit = 15;
+
   const handleClickOutside = (e) => {
     if (e.target.id === "modal-container") {
       onClose();
@@ -92,6 +95,7 @@ const Modal = ({ post, isOpen, onClose }) => {
   };
 
   const skillsArray = post?.skills ? JSON.parse(post.skills) : [];
+
   return (
     <div
       id="modal-container"
@@ -103,7 +107,6 @@ const Modal = ({ post, isOpen, onClose }) => {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
         >
-          {/* Close Icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -120,10 +123,8 @@ const Modal = ({ post, isOpen, onClose }) => {
           </svg>
         </button>
 
-        {/* Modal Content */}
         <h2 className="text-2xl font-bold mb-4">{post.lookingFor}</h2>
         <div className="grid grid-cols-2 gap-4 mb-6">
-          {/* Displaying Post Details */}
           <div className="flex items-center">
             <p className="text-gray-700">
               <strong>Location:</strong> {post.location}
@@ -134,8 +135,8 @@ const Modal = ({ post, isOpen, onClose }) => {
               <strong>File:</strong>
               <span className="">
                 <a
-                  href={post.file} // Assuming post.file contains the URL
-                  download // This attribute prompts a download when clicked
+                  href={post.file}
+                  download
                   className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-gray-400 border border-transparent rounded h-8 shadow-sm hover:bg-gray-600"
                 >
                   Download File
@@ -147,9 +148,8 @@ const Modal = ({ post, isOpen, onClose }) => {
           <div className="flex items-center">
             <p className="text-gray-700 flex items-center gap-2">
               <strong>Rate:</strong>{" "}
-              <span className="bg-green-200 px-2 py-1 rounded-lg text-xs text-primary-foreground font-bold flex items-center">
-                {getCurrencyIcon(post.currency)}{" "}
-                {/* Function to get the currency icon */}
+              <span className="bg-green-200 px-2 py-1 rounded-lg text-xs text-gray-800 font-bold flex items-center">
+                {getCurrencyIcon(post.currency)}
                 {Math.floor(post.budget)}/hr
               </span>
             </p>
@@ -170,18 +170,18 @@ const Modal = ({ post, isOpen, onClose }) => {
                   key={index}
                   className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
                 >
-                  {skill.trim()} {/* Trim any leading or trailing spaces */}
+                  {skill.trim()}
                 </span>
               ))
             ) : (
-              <span>No skills available</span> // Handle the case where skills are not available
+              <span>No skills available</span>
             )}
           </div>
         </div>
 
         <div className="bg-gray-100 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Job Description</h3>
-          <p className="text-gray-500  text-sm mt-3 font-bold">
+          <p className="text-gray-500 text-sm mt-3 font-bold">
             {post.requirementDescription}
           </p>
         </div>
@@ -190,39 +190,117 @@ const Modal = ({ post, isOpen, onClose }) => {
   );
 };
 
-// Main Posts Component
-function Posts() {
-  const [showFullText, setShowFullText] = useState({});
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [posts, setPosts] = useState([]); // State to hold posts
-  const wordLimit = 15;
-  const userData = JSON.parse(localStorage.getItem("userData")) || {};
-  const userId = userData.userid;
+const Autocomplete = ({ items, placeholder, onSelect }) => {
+  const [inputValue, setInputValue] = useState("");
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
 
-  // Fetch posts from API
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [wrapperRef]);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setFilteredItems(
+      items.filter((item) =>
+        item.name.toLowerCase().includes(value.toLowerCase())
+      )
+    );
+    setIsOpen(true);
+  };
+
+  const handleSelectItem = (item) => {
+    setInputValue(item.name);
+    onSelect(item.name);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <input
+        type="text"
+        className="w-full p-2 border bg-gray-200 rounded"
+        placeholder={placeholder}
+        value={inputValue}
+        onChange={handleInputChange}
+        onFocus={() => setIsOpen(true)}
+      />
+      {isOpen && filteredItems.length > 0 && (
+        <ul className="absolute z-10 w-full bg-white border rounded mt-1 max-h-60 overflow-auto">
+          {filteredItems.map((item) => (
+            <li
+              key={item.id}
+              className="p-2 hover:bg-gray-100 cursor-pointer"
+              onClick={() => handleSelectItem(item)}
+            >
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+export default function JobSearch() {
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [selectedSkill, setSelectedSkill] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [error, setError] = useState(null);
+  const [showFullText, setShowFullText] = useState({});
+  const wordLimit = 15;
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/post/user/${userId}`
-        ); // Replace with your API endpoint
-        const data = await response.json();
-        // Check if data is an array, otherwise default to an empty array
+          `${process.env.REACT_APP_API_URL}/api/post`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        console.log("Raw response:", text);
+        const data = JSON.parse(text);
+        console.log("Parsed data:", data);
         setPosts(Array.isArray(data) ? data : []);
+        setFilteredPosts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching posts:", error);
-        setPosts([]); // Ensure posts is an empty array if there's an error
+        setError(error.message);
+        setPosts([]);
+        setFilteredPosts([]);
       }
     };
 
     fetchPosts();
-  }, [userId]); // Add userId as a dependency
+  }, []);
 
-  const handleToggle = (id) => {
-    setShowFullText((prevState) => ({
-      ...prevState,
-      [id]: !prevState[id],
-    }));
+  const handleSearch = () => {
+    const filtered = posts.filter((post) => {
+      const skillMatch =
+        !selectedSkill ||
+        (post.skills &&
+          JSON.parse(post.skills).some((skill) =>
+            skill.toLowerCase().includes(selectedSkill.toLowerCase())
+          ));
+      const countryMatch =
+        !selectedCountry ||
+        post.location.toLowerCase().includes(selectedCountry.toLowerCase());
+      return skillMatch && countryMatch;
+    });
+    setFilteredPosts(filtered);
   };
 
   const handleOpenModal = (post) => {
@@ -233,11 +311,42 @@ function Posts() {
     setSelectedPost(null);
   };
 
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
   return (
-    <div className="container mx-auto ">
-      <div className="bg-gray-200 px-20 py-12 md:py-20">
-        <div className="container grid grid-cols-1 gap-6 pt-5 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
+    <div className="container mx-auto my-20 px-10 p-4">
+      <div className="mb-10  flex justify-between gap-4">
+        <div className="w-full ">
+          <Autocomplete
+            items={skillsData}
+            placeholder="Search skills..."
+            onSelect={(skill) => setSelectedSkill(skill)}
+          />
+        </div>
+        <div className="w-full ">
+          <Autocomplete
+            items={countriesData}
+            placeholder="Search Country..."
+            onSelect={(country) => setSelectedCountry(country)}
+          />
+        </div>
+        <div className="w-full  flex items-end">
+          <button
+            className="w-full bg-black font-bold text-white p-2 rounded hover:bg-gray-800"
+            onClick={handleSearch}
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
+      {filteredPosts.length === 0 ? (
+        <div className="text-center text-gray-500">No posts found</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPosts.map((post) => (
             <div
               key={post.id}
               className="flex flex-col rounded-lg border text-card-foreground bg-white h-[220px] shadow-sm hover:shadow-lg transition-shadow duration-300"
@@ -279,10 +388,10 @@ function Posts() {
                 </div>
                 <div className="flex gap-3">
                   {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
-                      {post.miles}
-                    </span>
-                  </div> */}
+                  <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
+                    {post.miles}
+                  </span>
+                </div> */}
                   <div className="flex mt-2 items-center gap-2 text-sm text-muted-foreground">
                     <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
                       {post.preferredGender}
@@ -316,12 +425,11 @@ function Posts() {
             </div>
           ))}
         </div>
-      </div>
+      )}
+
       {selectedPost && (
         <Modal post={selectedPost} isOpen={true} onClose={handleCloseModal} />
       )}
     </div>
   );
 }
-
-export default Posts;

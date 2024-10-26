@@ -319,7 +319,7 @@ export default function OverseasEducation() {
   return (
     <div className="min-h-screen mt-[60px] bg-gray-100">
       <main>
-        <div className="max-w-7xl mx-auto py-12 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto lg:py-12 sm:px-6 lg:px-8">
           {/* Hero Section */}
           <div className="relative">
             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gray-100"></div>
@@ -359,7 +359,7 @@ export default function OverseasEducation() {
             </p>
           </header>
           {/* Offerings Section */}
-          <div className="mt-12">
+          <div className="mt-12 px-3">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {offerings.map((offering, index) => (
                 <div
@@ -386,7 +386,7 @@ export default function OverseasEducation() {
             </div>
           </div>
           {/* Highlights Section */}
-          <div className=" pb-10 pt-0.5 rounded-lg mt-10 bg-white">
+          <div className=" pb-10 pt-0.5 lg:rounded-lg mt-10 bg-white">
             <header className="relative h-24 my-5">
               <div className="absolute inset-0 flex items-center justify-center">
                 <h1 className="text-4xl font-bold text-black text-center px-4">

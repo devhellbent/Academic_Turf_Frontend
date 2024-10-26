@@ -1,42 +1,55 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 function Experience() {
+  const userData = JSON.parse(localStorage.getItem("userData")) || {};
+  const userId = userData.userid;
+  const [experience, setExperience] = useState([]);
+
+  const fetchExperience = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/experience/user/${userId}`
+      );
+      setExperience(response.data || []);
+    } catch (err) {
+      toast.error("Error fetching Experience");
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchExperience();
+    }
+  }, [userId]);
+
   return (
     <div>
-      <section class="w-full">
-        <div class="">
-          <div class="grid gap-8">
-            <div class="grid gap-6">
+      <section className="w-full">
+        <div className="grid gap-8">
+          {experience.length > 0 ? (
+            experience.map((exp) => (
               <div
-                class="rounded-lg border bg-gray-200  text-card-foreground shadow flex flex-row items-center gap-6 p-3"
+                key={exp.id}
+                className="rounded-lg border bg-gray-200 text-card-foreground shadow flex flex-col gap-6 p-4"
                 data-v0-t="card"
               >
-                <div class="flex-1 grid gap-2">
-                  <div class="flex items-center justify-between">
-                    <div class="space-y-1">
-                      <h3 class="text-xl font-bold">Software Engineer</h3>
-                      <p class="text-muted-foreground">Acme Inc</p>
-                    </div>
-                    <div class="text-sm text-muted-foreground">
-                      Jan 2021 - Present
-                    </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold">{exp.jobtitle}</h3>
+                    <p className="text-gray-500 font-bold ">{exp.company}</p>
                   </div>
-                  <p class="text-muted-foreground">
-                    Responsible for building and maintaining the company's web
-                    application, collaborating with cross-functional teams.
-                  </p>
-                  <div class="flex gap-2 justify-end">
-                    <button class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50  border-input bg-white hover:bg-gray-300 shadow  h-8 rounded-md px-5">
-                      View
-                    </button>
-                    <button class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50  border-input bg-white hover:bg-gray-300 shadow hover:text-accent-foreground h-8 rounded-md px-5">
-                      Edit
-                    </button>
+                  <div className="text-sm text-muted-foreground">
+                    {exp.startDate} - {exp.endDate}
                   </div>
                 </div>
+                <p className="text-muted-foreground">{exp.description}</p>
               </div>
-            </div>
-          </div>
+            ))
+          ) : (
+            <p>No experiences found.</p>
+          )}
         </div>
       </section>
     </div>

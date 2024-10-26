@@ -10,6 +10,7 @@ import Forgot from "./Compoenets/Auth/Forgot";
 import ChangePassword from "./Compoenets/Auth/ChangePassword";
 import Dashboard from "./Compoenets/Dashboard/Dashboard";
 import PostRequirement from "./Compoenets/Requirement/PostRequirement";
+import AllRequirements from "./Compoenets/Requirement/AllRequirements";
 import ResumeCheck from "./Compoenets/Resume/ResumeCheck";
 import ProfilePage from "./Compoenets/Profile/ProfilePage";
 import Wallet from "./Compoenets/Wallet/Wallet";
@@ -20,75 +21,62 @@ import AddEditExperience from "./Compoenets/Profile/ProfileEdit/Experience/AddEd
 import AddEditSkill from "./Compoenets/Profile/ProfileEdit/Skills/AddEditSkill";
 import AddCertificate from "./Compoenets/Profile/ProfileEdit/Certificate/AddCertificate";
 import OverseasEducation from "./Compoenets/OverseasEducation/OverseasEducation";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
   return (
-    <Router>
-
-      <div className="App">
-        <div className="fixed top-0 left-0 right-0 z-50   ">
-
-          <Navbar />
-        </div>
-        <Toaster
-          position="top-right"
-          reverseOrder={false}
-          gutter={8}
-          containerClassName=""
-          containerStyle={{}}
-          toastOptions={{
-            // Define default options
-            className: '',
-            duration: 5000,
-            style: {
-              background: 'white',
-              color: 'black',
-            },
-
-            // Default options for specific types
-            success: {
-              duration: 3000,
-              theme: {
-                primary: 'green',
-                secondary: 'black',
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <Router>
+        <div className="App flex flex-col min-h-screen">
+          <header className="fixed top-0 left-0 right-0 z-50">
+            <Navbar />
+          </header>
+          <Toaster
+            position="top-right"
+            reverseOrder={false}
+            gutter={8}
+            toastOptions={{
+              duration: 5000,
+              style: {
+                background: 'white',
+                color: 'black',
               },
-            },
-          }}
-        />
-        <div className="mt-10">
-
-          <Routes >
-            <Route path="/" element={<HomePage />} />
-            <Route path="/*" element={<HomePage />} />
-            <Route path="/signin" element={<Login />} />
-            <Route path="/signup" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/post-requiremnt" element={<PostRequirement />} />
-            <Route path="/overseas-education" element={<OverseasEducation />} />
-            <Route path="/resume-check" element={<ResumeCheck />} />
-
-
-            {/* Profile Routs */}
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/edit-skills" element={<AddEditSkill />} />
-            <Route path="/add-edit-certificate" element={<AddCertificate />} />
-            <Route path="/add-edit-experience" element={<AddEditExperience />} />
-            {/* <Route path="/add-edit-experience" element={<AddEditExperience />} /> */}
-
-
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/buy-coins" element={<BuyCoins />} />
-            <Route path="/my-posts" element={<Posts />} />
-            <Route path="/forgot-password" element={<Forgot />} />
-            <Route path="/reset-password/:token" element={<ChangePassword />} />
-
-          </Routes>
+              success: {
+                duration: 3000,
+                theme: {
+                  primary: 'green',
+                  secondary: 'black',
+                },
+              },
+            }}
+          />
+          <main className="flex-grow  ">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/signin" element={<Login />} />
+              <Route path="/signup" element={<Register />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/post-requiremnt" element={<PostRequirement />} />
+              <Route path="/overseas-education" element={<OverseasEducation />} />
+              <Route path="/resume-check" element={<ResumeCheck />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="/edit-skills" element={<AddEditSkill />} />
+              <Route path="/add-edit-certificate" element={<AddCertificate />} />
+              <Route path="/add-edit-experience" element={<AddEditExperience />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/buy-coins" element={<BuyCoins />} />
+              <Route path="/my-posts" element={<Posts />} />
+              <Route path="/all-requirements" element={<AllRequirements />} />
+              <Route path="/forgot-password" element={<Forgot />} />
+              <Route path="/reset-password/:token" element={<ChangePassword />} />
+              <Route path="*" element={<HomePage />} />
+            </Routes>
+          </main>
+          <Footer />
         </div>
-
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

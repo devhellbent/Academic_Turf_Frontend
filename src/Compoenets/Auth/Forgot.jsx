@@ -10,7 +10,7 @@ function Forgot() {
     e.preventDefault();
     setLoading(true); // Set loading to true when submit is clicked
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/forgot-password`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/forgot-password`, {
         email,
       });
       toast.success(response.data.message); // Show success toast

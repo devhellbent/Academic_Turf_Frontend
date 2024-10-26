@@ -16,7 +16,7 @@ function ChangePassword() {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/auth/resetpassword/${token}`,
+        `${process.env.REACT_APP_API_URL}/auth/resetpassword/${token}`,
         {
           newPassword,
           confirmPassword,

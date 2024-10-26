@@ -333,8 +333,8 @@ function TopUniversities() {
 
   return (
     <div>
-      <div className="min-h-screen bg-gray-200 rounded-lg mt-10 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gray-200    lg:rounded-lg mt-10 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto ">
           <h1 className="text-4xl font-bold text-center text-black mb-10">
             Top 10 universities in UK according to (QS Rankings 2025)
           </h1>
@@ -399,7 +399,7 @@ function TopUniversities() {
           </div>
         </div>
       </div>
-      <div className="min-h-screen bg-blue-100 rounded-lg mt-10 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-blue-100 lg:rounded-lg mt-10 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-black mb-10">
             Top 10 universities in US according to (QS Rankings 2025)

@@ -1,48 +1,59 @@
 import React, { useEffect, useRef, useState } from "react";
 import phoneNumberList from "../../JsonData/PhoneNumberList.json";
-import skillsList from "../../JsonData/SkillsList.json"; // Assuming skills.json contains a list of skills
+import skillsList from "../../JsonData/SkillsList.json";
 import languagesData from "../../JsonData/Language.json";
+import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
+import toast from "react-hot-toast";
+
 function PostRequirement() {
-  // Country selector state
+  const [location, setLocation] = useState('');
+  const [locationError, setLocationError] = useState('');
   const [selectedCountry, setSelectedCountry] = useState("");
   const [searchCountry, setSearchCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
-
-  // Requirement type dropdown state
   const [requirementType, setRequirementType] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Skills multi-select state
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState("");
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const [isOpengender, setIsOpengender] = useState(false);
+  const [selectedGender, setSelectedGender] = useState("");
+  const [languages, setLanguages] = useState([]);
+  const [filteredLanguages, setFilteredLanguages] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState("Select currency");
+  const [requirementDescription, setRequirementDescription] = useState("");
+  const [meetingPreference, setMeetingPreference] = useState("");
+  const [budget, setBudget] = useState("");
+  const [file, setFile] = useState(null);
+  const dropdownRef = useRef(null);
+  const searchBoxRef = useRef(null);
 
-  // Filter countries based on search input
+  useEffect(() => {
+    setLanguages(languagesData.languages);
+    setFilteredLanguages(languagesData.languages);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const filteredCountries = phoneNumberList.filter((country) =>
     country.label.toLowerCase().includes(searchCountry.toLowerCase())
   );
 
-  const [isOpengender, setIsOpengender] = useState(false); // To control dropdown visibility
-  const [selectedGender, setSelectedGender] = useState(""); // To store selected gender
-  const [languages, setLanguages] = useState([]);
-  const [filteredLanguages, setFilteredLanguages] = useState([]);
-  const [selectedLanguage, setSelectedLanguage] = useState(""); // Track the selected language
-  const [searchQuery, setSearchQuery] = useState(""); // Track the search input
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Track dropdown visibility
-
-  useEffect(() => {
-    // Load the languages from the JSON file when the component mounts
-    setLanguages(languagesData.languages);
-    setFilteredLanguages(languagesData.languages); // Initialize with all languages
-  }, []);
+  const filteredSkills = skillsList.filter((skill) =>
+    skill.name.toLowerCase().includes(skillSearch.toLowerCase())
+  );
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    setIsDropdownOpen(true); // Open the dropdown as soon as user starts typing
-
-    // Filter languages based on search query
+    setIsDropdownOpen(true);
     const filtered = languages.filter((language) =>
       language.toLowerCase().includes(query)
     );
@@ -51,9 +62,10 @@ function PostRequirement() {
 
   const handleSelectLanguage = (language) => {
     setSelectedLanguage(language);
-    setSearchQuery(language); // Set the search input to the selected language
-    setIsDropdownOpen(false); // Close the dropdown once a language is selected
+    setSearchQuery(language);
+    setIsDropdownOpen(false);
   };
+
   const handleToggle = () => {
     setIsOpengender(!isOpengender);
   };
@@ -63,15 +75,11 @@ function PostRequirement() {
     setIsOpengender(false);
   };
 
-  // Handle country selection
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
-    setSearchCountry(""); // Clear search input after selection
-    setShowCountryDropdown(false); // Close the dropdown after selection
+    setSearchCountry(country.label);
+    setShowCountryDropdown(false);
   };
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("Select currency");
-  const dropdownRef = useRef(null);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -88,27 +96,14 @@ function PostRequirement() {
     }
   };
 
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-  // Filter skills based on search input
-  const filteredSkills = skillsList.filter((skill) =>
-    skill.name.toLowerCase().includes(skillSearch.toLowerCase())
-  );
-
-  // Add a skill to the selected skills list
   const handleAddSkill = (skill) => {
     if (!selectedSkills.some((s) => s.id === skill.id)) {
       setSelectedSkills([...selectedSkills, skill]);
     }
-    setSkillSearch(""); // Clear search after selection
-    setShowSkillDropdown(false); // Close dropdown
+    setSkillSearch("");
+    setShowSkillDropdown(false);
   };
 
-  // Remove a skill from the selected skills list
   const handleRemoveSkill = (skillId) => {
     const updatedSkills = selectedSkills.filter(
       (skill) => skill.id !== skillId
@@ -116,15 +111,101 @@ function PostRequirement() {
     setSelectedSkills(updatedSkills);
   };
 
-  // Toggle requirement dropdown visibility
   const handleRequirementDropdownToggle = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  // Handle requirement type selection
   const handleOptionSelect = (value) => {
     setRequirementType(value);
     setDropdownOpen(false);
+  };
+
+  const handleLoad = (ref) => {
+    searchBoxRef.current = ref;
+  };
+
+  const handlePlacesChanged = () => {
+    const places = searchBoxRef.current.getPlaces();
+    if (places.length === 0) {
+      setLocationError("No places found");
+      return;
+    }
+    const place = places[0];
+    if (!place.formatted_address) {
+      setLocationError("No address available for the selected place");
+      return;
+    }
+    setLocation(place.formatted_address);
+    setLocationError("");
+  
+    const addressComponents = place.address_components;
+    let country = "";
+    for (let component of addressComponents) {
+      if (component.types.includes("country")) {
+        country = component.long_name;
+        break;
+      }
+    }
+  
+    if (country) {
+      const matchedCountry = phoneNumberList.find(
+        (c) => c.label.toLowerCase() === country.toLowerCase()
+      );
+  
+      if (matchedCountry) {
+        setSelectedCountry(matchedCountry);
+        setSearchCountry(matchedCountry.label);
+      } else {
+        console.warn(`Country "${country}" not found in phoneNumberList`);
+      }
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const userData = JSON.parse(localStorage.getItem("userData")) || {};
+  const userId = userData.userid;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('location', location);
+    formData.append('phoneNumber', phoneNumber);
+    formData.append('lookingFor', requirementType);
+    formData.append('skills', JSON.stringify(selectedSkills.map(skill => skill.name)));
+    formData.append('requirementDescription', requirementDescription);
+    formData.append('meetingPreference', meetingPreference);
+    formData.append('budget', budget);
+    formData.append('currency', selectedCurrency);
+    formData.append('preferredGender', selectedGender);
+    formData.append('language', selectedLanguage);
+    formData.append('userId', userId);
+    if (file) {
+      formData.append('file', file);
+    }
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/post`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Post requirement created:', result);
+        toast.success('Post requirement created Successfully');
+        // Handle success (e.g., show a success message, reset form)
+      } else {
+        console.error('Failed to create post requirement');
+        toast.error('Failed to create post requirement');
+        // Handle error (e.g., show error message)
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Error submitting form:', error);
+      // Handle error (e.g., show error message)
+    }
   };
 
   const requirementOptions = [
@@ -141,7 +222,7 @@ function PostRequirement() {
     <div className="bg-gray-200 mt-[60px] w-full">
       <div className="max-w-4xl mx-auto p-6 sm:p-8 md:p-10">
         <h1 className="text-3xl font-bold mb-6">Post a Requirement</h1>
-        <form className="grid gap-6">
+        <form onSubmit={handleSubmit} className="grid gap-6">
           {/* Location */}
           <div>
             <label
@@ -154,11 +235,27 @@ function PostRequirement() {
               Enter your locality details here. Note: Please do not put exact
               address here
             </div>
+            <LoadScript
+              googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+              libraries={["places"]}
+            >
+            <StandaloneSearchBox
+              onLoad={handleLoad}
+              onPlacesChanged={handlePlacesChanged}
+            >
             <input
               className="flex h-10 w-full shadow rounded-md border px-3 py-2 text-sm"
               id="name"
               placeholder="Enter your Location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
             />
+            </StandaloneSearchBox>
+            </LoadScript>
+            {locationError && (
+              <p className="text-red-500 text-sm mt-2">{locationError}</p>
+            )}
           </div>
 
           {/* Country Selector */}
@@ -274,8 +371,9 @@ function PostRequirement() {
                   key={skill.id}
                   className="bg-blue-100 text-xs px-2 py-1 rounded-md border flex items-center gap-2"
                 >
-                  {skill.name}
+                  {skill.name}        
                   <button
+                    type="button"
                     className="text-red-500"
                     onClick={() => handleRemoveSkill(skill.id)}
                   >
@@ -298,7 +396,7 @@ function PostRequirement() {
             {/* Skill Dropdown */}
             {showSkillDropdown && skillSearch && (
               <ul className="absolute w-full bg-white shadow border rounded-md max-h-40 overflow-auto mt-1 z-10">
-                {filteredSkills.length > 0 ? (
+                {filteredSkills.length > 0  ? (
                   filteredSkills.map((skill) => (
                     <li
                       key={skill.id}
@@ -318,7 +416,7 @@ function PostRequirement() {
           <div>
             <label
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              for="requirement-description"
+              htmlFor="requirement-description"
             >
               Requirement Description
             </label>
@@ -327,11 +425,13 @@ function PostRequirement() {
               id="requirement-description"
               rows="4"
               placeholder="Describe your requirement"
+              value={requirementDescription}
+              onChange={(e) => setRequirementDescription(e.target.value)}
             ></textarea>
           </div>
           <div>
             <label
-              for="meeting-preference"
+              htmlFor="meeting-preference"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Meeting Preference
@@ -341,8 +441,10 @@ function PostRequirement() {
                 id="meeting-preference"
                 name="meeting-preference"
                 className="w-full h-10 rounded px-3 shadow border border-primary bg-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                value={meetingPreference}
+                onChange={(e) => setMeetingPreference(e.target.value)}
               >
-                <option value="" disabled selected>
+                <option value="" disabled>
                   Select a meeting preference
                 </option>
                 <option value="zoom">Zoom</option>
@@ -355,7 +457,7 @@ function PostRequirement() {
           <div>
             <label
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              for="budget"
+              htmlFor="budget"
             >
               Budget
             </label>
@@ -365,6 +467,8 @@ function PostRequirement() {
                 id="budget"
                 placeholder="0"
                 type="number"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
               />
               <div className="relative w-full " ref={dropdownRef}>
                 <button
@@ -512,8 +616,8 @@ function PostRequirement() {
               onChange={handleSearch}
               placeholder="Search or select your preferred language"
               className="flex h-10 rounded-md shadow border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full"
-              onFocus={() => setIsDropdownOpen(true)} // Open dropdown on focus
-              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)} // Close dropdown after a delay to allow click selection
+              onFocus={() => setIsDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
             />
 
             {/* Autocomplete dropdown */}
@@ -523,7 +627,7 @@ function PostRequirement() {
                   <li
                     key={index}
                     className="cursor-pointer px-3 py-2 hover:bg-gray-100 text-sm"
-                    onMouseDown={() => handleSelectLanguage(language)} // On select, update the input
+                    onMouseDown={() => handleSelectLanguage(language)}
                   >
                     {language}
                   </li>
@@ -543,17 +647,17 @@ function PostRequirement() {
           <div>
             <label
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              for="file-upload"
+              htmlFor="file-upload"
             >
               File Upload
             </label>
 
             <div className="flex items-center justify-center w-full">
               <label
-                for="dropzone-file"
-                className="flex flex-col  items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                htmlFor="dropzone-file"
+                className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
               >
-                <div className="flex flex-col  items-center justify-center pt-5 pb-6">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg
                     className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
                     aria-hidden="true"
@@ -577,11 +681,11 @@ function PostRequirement() {
                     SVG, PNG, JPG or GIF (MAX. 800x400px)
                   </p>
                 </div>
-                <input id="dropzone-file" type="file" className="hidden" />
+                <input id="dropzone-file" type="file" className="hidden" onChange={handleFileChange} />
               </label>
             </div>
             <div>
-              <button className="bg-black w-full mt-6 shadow rounded p-2 text-white">
+              <button type="submit" className="bg-black w-full mt-6 shadow rounded p-2 text-white">
                 Create Post
               </button>
             </div>
@@ -592,4 +696,4 @@ function PostRequirement() {
   );
 }
 
-export default PostRequirement;
+export default PostRequirement;                              

@@ -1,11 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Experience from "./ProfileEdit/Experience/Experience";
 import Certificate from "./ProfileEdit/Certificate/Certificate";
 import Skills from "./ProfileEdit/Skills/Skills";
+import axios from "axios";
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // Add this line
+
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    profilePicture: "",
+    location: "",
+    phoneNumber: "",
+    designation: "",
+    experienceYears: "",
+  });
+
+  const getUserIdFromLocalStorage = () => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    const userId = userData?.userid;
+    return userId;
+  };
+
+  // Fetch profile data (GET API)
+  const fetchProfile = async (userId) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/users/${userId}/profile`
+      );
+      setProfile(response.data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    const userId = getUserIdFromLocalStorage();
+    if (userId) {
+      fetchProfile(userId); // Fetch profile using the correct userId
+    } else {
+      console.error("User ID not found in localStorage");
+    }
+  }, []);
+
   return (
     <div>
       <div className="bg-gray-200 mt-[60px] text-foreground">
@@ -15,13 +55,17 @@ function ProfilePage() {
               <span className="relative flex shrink-0 overflow-hidden rounded-full h-24 w-24">
                 <img
                   className="aspect-square h-full w-full object-cover"
-                  alt="@shadcn"
-                  src="https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg?t=st=1727668774~exp=1727672374~hmac=5ae2663eb6e0c9db5527162da187379eb569a3d55ea81c5d6a9393fdad90f6e5&w=900"
+                  alt={profile?.name}
+                  src={
+                    profile?.profilePicture ||
+                    "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1727763930~exp=1727767530~hmac=ab89d95523cfe749e2105faa4ca310f4a1b012877aec9197fbd9b40d9f235180&w=826"
+                  }
+                  loading="lazy"
                 />
               </span>
               <div className="grid gap-1 text-center">
-                <h2 className="text-2xl font-bold">John Doe</h2>
-                <p className="text-muted-foreground">john@example.com</p>
+                <h2 className="text-2xl font-bold">{profile?.name}</h2>
+                <p className="text-muted-foreground">{profile?.email}</p>
               </div>
               <div className="flex items-center gap-2 rounded-lg bg-gray-300 px-3 py-1 text-sm font-medium">
                 <svg
@@ -91,7 +135,7 @@ function ProfilePage() {
                   </h3>
                   <button
                     onClick={() => navigate("/edit-profile")}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex hover:bg-gray-300 rounded-full items-center justify-center whitespace-nowrap p-2 text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +173,7 @@ function ProfilePage() {
                       <rect width="20" height="14" x="2" y="6" rx="2"></rect>
                     </svg>
                     <div>
-                      <p className="font-medium">Software Engineer</p>
+                      <p className="font-medium">{profile?.designation}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -151,7 +195,7 @@ function ProfilePage() {
                       <line x1="12" x2="12" y1="19" y2="22"></line>
                       <circle cx="12" cy="12" r="7"></circle>
                     </svg>
-                    <p>San Francisco, CA</p>
+                    <p>{profile?.location}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg
@@ -168,7 +212,7 @@ function ProfilePage() {
                     >
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
-                    <p>+1 (555) 555-5555</p>
+                    <p>{profile?.phoneNumber}</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -187,7 +231,7 @@ function ProfilePage() {
                       <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                       <rect width="20" height="14" x="2" y="6" rx="2"></rect>
                     </svg>
-                    <p>Experience: 5 years</p>
+                    <p>Experience : {profile?.experienceYears} years</p>
                   </div>
                 </div>
               </div>
@@ -197,7 +241,7 @@ function ProfilePage() {
                   <h3 className="text-xl font-semibold">Skills</h3>
                   <button
                     onClick={() => navigate("/edit-skills")}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex hover:bg-gray-300 rounded-full items-center justify-center whitespace-nowrap  text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +272,7 @@ function ProfilePage() {
                   <h3 className="text-xl font-semibold">Certifications</h3>
                   <button
                     onClick={() => navigate("/add-edit-certificate")}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex items-center justify-center whitespace-nowrap hover:bg-gray-300 rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -257,7 +301,7 @@ function ProfilePage() {
                   <h3 className="text-xl font-semibold">Experience</h3>
                   <button
                     onClick={() => navigate("/add-edit-experience")}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                    className="inline-flex items-center justify-center whitespace-nowrap hover:bg-gray-300 rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
