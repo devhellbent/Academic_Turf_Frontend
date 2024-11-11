@@ -22,6 +22,9 @@ import AddEditSkill from "./Compoenets/Profile/ProfileEdit/Skills/AddEditSkill";
 import AddCertificate from "./Compoenets/Profile/ProfileEdit/Certificate/AddCertificate";
 import OverseasEducation from "./Compoenets/OverseasEducation/OverseasEducation";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ServiceProvider from "./Compoenets/ServiceProvider/ServiceProvider";
+import UserProfile from "./Compoenets/Profile/UserProfile/UserProfile";
+import FullUserProfile from "./Compoenets/Profile/UserProfile/FullUserProfile";
 
 function App() {
   return (
@@ -60,6 +63,7 @@ function App() {
               <Route path="/overseas-education" element={<OverseasEducation />} />
               <Route path="/resume-check" element={<ResumeCheck />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/user-profile" element={<FullUserProfile />} />
               <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="/edit-skills" element={<AddEditSkill />} />
               <Route path="/add-edit-certificate" element={<AddCertificate />} />
@@ -68,6 +72,7 @@ function App() {
               <Route path="/buy-coins" element={<BuyCoins />} />
               <Route path="/my-posts" element={<Posts />} />
               <Route path="/all-requirements" element={<AllRequirements />} />
+              <Route path="/service-provider" element={<ServiceProvider />} />
               <Route path="/forgot-password" element={<Forgot />} />
               <Route path="/reset-password/:token" element={<ChangePassword />} />
               <Route path="*" element={<HomePage />} />

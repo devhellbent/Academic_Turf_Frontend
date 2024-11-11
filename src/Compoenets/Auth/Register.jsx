@@ -210,8 +210,8 @@ function Register() {
                   required
                 >
                   <option value="">Select Role</option>
-                  <option value="service-provider">Service Provider</option>
-                  <option value="student-client">Student Client</option>
+                  <option value="Service Provider">Service Provider</option>
+                  <option value="Student Client">Student Client</option>
                 </select>
               </div>
             </div>

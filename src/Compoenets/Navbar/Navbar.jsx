@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom"; // Import the useNavigate hook
+import { Link, useNavigate } from "react-router-dom"; // Import the useNavigate hook
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ const Navbar = () => {
       const userData = JSON.parse(storedUserData);
       localStorage.removeItem("userData"); // Clear user data
       setUserData(null); // Update state to reflect logged out
-      navigate('/signin')
+      navigate("/signin");
       toast.success(`Logging out user: ${userData.name}`);
       // navigate(""); // Navigate to sign-in page
       // window.location.reload();
@@ -83,15 +83,28 @@ const Navbar = () => {
             </div>
           </div>
           <nav className="hidden md:flex space-x-4">
-            <div
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/all-requirements");
-              }}
-              className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
-            >
-              All Requirements
-            </div>
+            <a href="/all-requirements">
+              <div
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   navigate("/all-requirements");
+                // }}
+                className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
+              >
+                All Requirements
+              </div>
+            </a>
+            <a href="/service-provider">
+              <div
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   navigate("/service-provider");
+                // }}
+                className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
+              >
+                Find Service Provider
+              </div>
+            </a>
             <div
               onClick={(e) => {
                 e.preventDefault();
@@ -202,8 +215,10 @@ const Navbar = () => {
                     </div>
                     <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
                       <li>
-                        
-                        <div onClick={()=> navigate ('/dashboard')} className=" cursor-pointer gap-2 flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                        <div
+                          onClick={() => navigate("/dashboard")}
+                          className=" cursor-pointer gap-2 flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="28"

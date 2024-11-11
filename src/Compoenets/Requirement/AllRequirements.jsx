@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import skillsData from "../../JsonData/SkillsList.json";
 import countriesData from "../../JsonData/countries.json";
+
 // Function to truncate text for preview
 function truncateText(text, wordLimit) {
   if (!text) return ""; // Return an empty string if text is undefined or null
@@ -9,9 +10,6 @@ function truncateText(text, wordLimit) {
     ? words.slice(0, wordLimit).join(" ") + "..."
     : text;
 }
-
-
-
 
 const getCurrencyIcon = (currency) => {
   switch (currency) {
@@ -22,7 +20,7 @@ const getCurrencyIcon = (currency) => {
           width="16"
           height="16"
           fill="currentColor"
-          class="bi bi-currency-dollar"
+          className="bi bi-currency-dollar"
           viewBox="0 0 16 16"
         >
           <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73z" />
@@ -35,7 +33,7 @@ const getCurrencyIcon = (currency) => {
           width="16"
           height="16"
           fill="currentColor"
-          class="bi bi-currency-euro"
+          className="bi bi-currency-euro"
           viewBox="0 0 16 16"
         >
           <path d="M4 9.42h1.063C5.4 12.323 7.317 14 10.34 14c.622 0 1.167-.068 1.659-.185v-1.3c-.484.119-1.045.17-1.659.17-2.1 0-3.455-1.198-3.775-3.264h4.017v-.928H6.497v-.936q-.002-.165.008-.329h4.078v-.927H6.618c.388-1.898 1.719-2.985 3.723-2.985.614 0 1.175.05 1.659.177V2.194A6.6 6.6 0 0 0 10.341 2c-2.928 0-4.82 1.569-5.244 4.3H4v.928h1.01v1.265H4v.928z" />
@@ -62,7 +60,7 @@ const getCurrencyIcon = (currency) => {
           width="16"
           height="16"
           fill="currentColor"
-          class="bi bi-currency-rupee"
+          className="bi bi-currency-rupee"
           viewBox="0 0 16 16"
         >
           <path d="M4 3.06h2.726c1.22 0 2.12.575 2.325 1.724H4v1.051h5.051C8.855 7.001 8 7.558 6.788 7.558H4v1.317L8.437 14h2.11L6.095 8.884h.855c2.316-.018 3.465-1.476 3.688-3.049H12V4.784h-1.345c-.08-.778-.357-1.335-.793-1.732H12V2H4z" />
@@ -260,7 +258,17 @@ export default function JobSearch() {
   const [error, setError] = useState(null);
   const [showFullText, setShowFullText] = useState({});
   const wordLimit = 15;
-
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [requirementType, setRequirementType] = useState("");
+  const requirementOptions = [
+    { value: "assignment-help", label: "Assignment Help" },
+    { value: "accommodation", label: "Accommodation" },
+    { value: "internship", label: "Internship" },
+    { value: "job", label: "Job" },
+    { value: "job-support", label: "Job Support (Resume/CV)" },
+    { value: "tutoring", label: "Tutoring" },
+    { value: "visa-assistance", label: "Visa Assistance" },
+  ];
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -298,7 +306,11 @@ export default function JobSearch() {
       const countryMatch =
         !selectedCountry ||
         post.location.toLowerCase().includes(selectedCountry.toLowerCase());
-      return skillMatch && countryMatch;
+      const requirementTypeMatch =
+        !requirementType ||
+        post.lookingFor.toLowerCase() === requirementType.toLowerCase();
+
+      return skillMatch && countryMatch && requirementTypeMatch;
     });
     setFilteredPosts(filtered);
   };
@@ -314,10 +326,60 @@ export default function JobSearch() {
   if (error) {
     return <div className="text-red-500">Error: {error}</div>;
   }
+  const handleRequirementDropdownToggle = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+  const handleOptionSelect = (value) => {
+    setRequirementType(value);
+    setDropdownOpen(false);
+  };
 
   return (
     <div className="container mx-auto my-20 px-10 p-4">
-      <div className="mb-10  flex justify-between gap-4">
+      <h1 className="text-3xl font-bold text-primary mb-5">All Requirements</h1>
+      <div className="mb-10  grid lg:grid-cols-4 items-center gap-4">
+        <div className="w-full  relative">
+          <div>
+            <button
+              type="button"
+              className="flex h-10 w-full shadow items-center justify-between rounded-md border bg-white px-3 py-2 text-sm"
+              onClick={handleRequirementDropdownToggle}
+            >
+              <span>
+                {requirementType ? requirementType : "Select requirement type"}
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-chevron-down h-4 w-4 opacity-50"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </button>
+
+            {dropdownOpen && (
+              <ul className="absolute mt-1 w-full bg-white shadow-lg border rounded-md overflow-auto z-10 max-h-40">
+                {requirementOptions.map((option) => (
+                  <li
+                    key={option.value}
+                    className="p-2 hover:bg-gray-100 cursor-pointer text-gray-700 text-sm flex items-center"
+                    onClick={() => handleOptionSelect(option.label)}
+                  >
+                    <span className="block w-full">{option.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
         <div className="w-full ">
           <Autocomplete
             items={skillsData}
@@ -387,18 +449,13 @@ export default function JobSearch() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
-                    {post.miles}
-                  </span>
-                </div> */}
                   <div className="flex mt-2 items-center gap-2 text-sm text-muted-foreground">
                     <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
                       {post.preferredGender}
                     </span>
                   </div>
                 </div>
-                <p className="text-gray-500  text-sm mt-3 font-medium">
+                <p className="text-gray-500 text-sm mt-3 font-medium overflow-hidden text-ellipsis">
                   {showFullText[post.id]
                     ? post.description
                     : truncateText(post.requirementDescription, wordLimit)}
@@ -408,10 +465,7 @@ export default function JobSearch() {
               {/* Fixed Footer */}
               <div className="flex items-center justify-between bg-gray-100 rounded-b-lg px-4 p-2">
                 <div className="flex  items-center justify-between text-xs  font-bold">
-                  <span className="text-gray-500">
-                    Application Deadline:
-                    {/* {post.deadline} */}
-                  </span>
+                  <span className="text-gray-500">Application Deadline:</span>
                 </div>
                 <div>
                   <button
