@@ -19,7 +19,7 @@ function Features() {
 
       <div className="features flex py-4 align-item-ctr margin-block-50">
         <div className="feature-img">
-          <img src={featuresImg} alt={"features Image"} className="main-img" />
+          <img src={featuresImg} alt={"features Image"} className="main-img w-full h-auto object-contain" />
         </div>
 
         <div className="features-text">

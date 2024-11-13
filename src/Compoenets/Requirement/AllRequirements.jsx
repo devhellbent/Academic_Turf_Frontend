@@ -219,7 +219,7 @@ const Autocomplete = ({ items, placeholder, onSelect }) => {
 
   const handleSelectItem = (item) => {
     setInputValue(item.name);
-    onSelect(item.name);
+    onSelect(item);
     setIsOpen(false);
   };
 
@@ -249,16 +249,18 @@ const Autocomplete = ({ items, placeholder, onSelect }) => {
     </div>
   );
 };
+
 export default function JobSearch() {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
-  const [selectedSkill, setSelectedSkill] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const [error, setError] = useState(null);
   const [showFullText, setShowFullText] = useState({});
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const wordLimit = 15;
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [requirementType, setRequirementType] = useState("");
   const requirementOptions = [
     { value: "assignment-help", label: "Assignment Help" },
@@ -269,6 +271,7 @@ export default function JobSearch() {
     { value: "tutoring", label: "Tutoring" },
     { value: "visa-assistance", label: "Visa Assistance" },
   ];
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -295,13 +298,17 @@ export default function JobSearch() {
     fetchPosts();
   }, []);
 
-  const handleSearch = () => {
+  useEffect(() => {
+    handleFilter();
+  }, [selectedSkills, selectedCountry, requirementType, posts]);
+
+  const handleFilter = () => {
     const filtered = posts.filter((post) => {
       const skillMatch =
-        !selectedSkill ||
+        selectedSkills.length === 0 ||
         (post.skills &&
           JSON.parse(post.skills).some((skill) =>
-            skill.toLowerCase().includes(selectedSkill.toLowerCase())
+            selectedSkills.includes(skill.toLowerCase())
           ));
       const countryMatch =
         !selectedCountry ||
@@ -315,6 +322,32 @@ export default function JobSearch() {
     setFilteredPosts(filtered);
   };
 
+  const handleSkillToggle = (skill) => {
+    setSelectedSkills((prevSkills) =>
+      prevSkills.includes(skill)
+        ? prevSkills.filter((s) => s !== skill)
+        : [...prevSkills, skill]
+    );
+  };
+
+  const handleResetFilters = () => {
+    setSelectedSkills([]);
+    setSelectedCountry("");
+    setRequirementType("");
+  };
+  const handleUserCardClick = (user) => {
+    if (selectedUser && selectedUser.id === user.id) {
+      setIsDrawerOpen(false);
+      setSelectedUser(null);
+    } else {
+      setSelectedUser(user);
+      setIsDrawerOpen(true);
+    }
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+  };
   const handleOpenModal = (post) => {
     setSelectedPost(post);
   };
@@ -326,164 +359,350 @@ export default function JobSearch() {
   if (error) {
     return <div className="text-red-500">Error: {error}</div>;
   }
-  const handleRequirementDropdownToggle = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
-  const handleOptionSelect = (value) => {
-    setRequirementType(value);
-    setDropdownOpen(false);
-  };
-
+  const skillsArray = selectedUser?.skills
+    ? JSON.parse(selectedUser.skills)
+    : [];
   return (
-    <div className="container mx-auto my-20 px-10 p-4">
-      <h1 className="text-3xl font-bold text-primary mb-5">All Requirements</h1>
-      <div className="mb-10  grid lg:grid-cols-4 items-center gap-4">
-        <div className="w-full  relative">
-          <div>
-            <button
-              type="button"
-              className="flex h-10 w-full shadow items-center justify-between rounded-md border bg-white px-3 py-2 text-sm"
-              onClick={handleRequirementDropdownToggle}
-            >
-              <span>
-                {requirementType ? requirementType : "Select requirement type"}
-              </span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-chevron-down h-4 w-4 opacity-50"
-                aria-hidden="true"
-              >
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
+    <div className="lg:mt-16 mt-[60px] bg-gray-100 min-h-screen">
+      <div className="max-w-9xl mx-auto lg:p-4 p-2">
+        {/* Sidebar */}
+        <div className="flex flex-col lg:flex-row gap-5 ">
+          <div className="lg:w-1/4 bg-white p-4 lg:min-h-screen rounded-lg shadow">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Filters</h2>
 
-            {dropdownOpen && (
-              <ul className="absolute mt-1 w-full bg-white shadow-lg border rounded-md overflow-auto z-10 max-h-40">
+            {/* Requirement Type */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2 text-gray-700">
+                Requirement Type
+              </h3>
+              <select
+                value={requirementType}
+                onChange={(e) => setRequirementType(e.target.value)}
+                className="w-full p-2 border rounded bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Types</option>
                 {requirementOptions.map((option) => (
-                  <li
-                    key={option.value}
-                    className="p-2 hover:bg-gray-100 cursor-pointer text-gray-700 text-sm flex items-center"
-                    onClick={() => handleOptionSelect(option.label)}
-                  >
-                    <span className="block w-full">{option.label}</span>
-                  </li>
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
-              </ul>
+              </select>
+            </div>
+
+            {/* Skills */}
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2 text-gray-700">Skills</h3>
+              <Autocomplete
+                items={skillsData}
+                placeholder="Search skills..."
+                onSelect={(skill) =>
+                  handleSkillToggle(skill.name.toLowerCase())
+                }
+              />
+              <div className="mt-2">
+                {selectedSkills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
+                  >
+                    {skill}
+                    <button
+                      onClick={() => handleSkillToggle(skill)}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Country */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2 text-gray-700">Country</h3>
+              <Autocomplete
+                items={countriesData}
+                placeholder="Search countries..."
+                onSelect={(country) => setSelectedCountry(country.name)}
+              />
+              {selectedCountry && (
+                <div className="mt-2">
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                    {selectedCountry}
+                    <button
+                      onClick={() => setSelectedCountry("")}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Reset Filters Button */}
+            <button
+              onClick={handleResetFilters}
+              className="w-full bg-[#9333ea] text-white p-2 rounded hover:bg-[#742bb9] transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#9333ea]"
+            >
+              Reset Filters
+            </button>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:w-3/4 min-h-screen overflow-y-auto overflow-x-hidden max-h-screen">
+            <h1 className="text-3xl mt-1 font-bold text-primary mb-5">
+              All Requirements
+            </h1>
+
+            {filteredPosts.length === 0 ? (
+              <div className="text-center text-gray-500">No posts found</div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 p-3 pl-0 pt-0 gap-3">
+                {filteredPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="bg-white shadow-md cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg  flex flex-col rounded-lg text-card-foreground lg:h-[220px]"
+                    onClick={() => handleUserCardClick(post)}
+                  >
+                    {/* Card Content */}
+                    <div className="flex-grow p-6 pb-0">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h3 className="text-lg font-semibold">
+                            {post.lookingFor}
+                          </h3>
+                          <div className="flex items-center gap-2 text-sm font-bold">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="13"
+                              height="13"
+                              fill="#9333ea"
+                              className="bi bi-geo-alt"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
+                              <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                            </svg>
+                            <span className="text-[#9333ea] gap-2 text-xs font-bold">
+                              {post.location}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span className="flex items-center">
+                            <span className="bg-green-200 px-2 py-1 rounded-lg text-xs text-primary-foreground font-bold flex items-center">
+                              {getCurrencyIcon(post.currency)}
+                              {Math.floor(post.budget)}/hr
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex mt-2 items-center gap-2 text-sm text-muted-foreground">
+                          <span className="bg-[#eaddf6] px-2 py-1 rounded-md text-xs font-bold">
+                            {post.preferredGender}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-500 text-sm mt-3 font-medium overflow-hidden text-ellipsis">
+                        {showFullText[post.id]
+                          ? post.description
+                          : truncateText(
+                              post.requirementDescription,
+                              wordLimit
+                            )}
+                      </p>
+                    </div>
+
+                    {/* Fixed Footer */}
+                    <div className="flex items-center justify-between bg-gray-200 rounded-b-lg px-4 p-2">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="text-[#9333ea]">
+                          Application Deadline:
+                        </span>
+                      </div>
+                      <div>
+                        <button
+                          className="bg-[#9333ea] text-sm p-1 px-3 text-bold text-white font-bold hover:bg-[#7c37bd] rounded-[5px]"
+                          onClick={() => handleUserCardClick(post)}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedPost && (
+              <Modal
+                post={selectedPost}
+                isOpen={true}
+                onClose={handleCloseModal}
+              />
             )}
           </div>
         </div>
-        <div className="w-full ">
-          <Autocomplete
-            items={skillsData}
-            placeholder="Search skills..."
-            onSelect={(skill) => setSelectedSkill(skill)}
-          />
-        </div>
-        <div className="w-full ">
-          <Autocomplete
-            items={countriesData}
-            placeholder="Search Country..."
-            onSelect={(country) => setSelectedCountry(country)}
-          />
-        </div>
-        <div className="w-full  flex items-end">
-          <button
-            className="w-full bg-black font-bold text-white p-2 rounded hover:bg-gray-800"
-            onClick={handleSearch}
-          >
-            Search
-          </button>
-        </div>
       </div>
+      <div
+        id="user-profile-drawer"
+        className={`fixed inset-y-0 z-50 right-0 lg:w-1/2 bg-white shadow-xl transform ${
+          isDrawerOpen ? "translate-x-0" : "translate-x-full"
+        } transition-transform duration-300 ease-in-out overflow-y-auto`}
+      >
+        {selectedUser && (
+          <div className="lg:p-3 p-2">
+            <div className="flex justify-between items-center mb-2">
+              <button
+                onClick={closeDrawer}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              {/* <button
+                onClick={() =>
+                  window.open(
+                    `/user-profile?userId=${selectedUser.id}`,
+                    "_blank"
+                  )
+                }
+                className="border flex items-center gap-1 p-1 px-3 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Open Profile In New Tab{" "}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                  className="bi bi-arrow-up-right-square"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5.854 8.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z"
+                  />
+                </svg>
+              </button> */}
+            </div>
 
-      {filteredPosts.length === 0 ? (
-        <div className="text-center text-gray-500">No posts found</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.map((post) => (
-            <div
-              key={post.id}
-              className="flex flex-col rounded-lg border text-card-foreground bg-white h-[220px] shadow-sm hover:shadow-lg transition-shadow duration-300"
-            >
-              {/* Card Content */}
-              <div className="flex-grow p-6 pb-0">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <h3 className="text-lg  font-semibold">
-                      {post.lookingFor}
-                    </h3>
-                    <div className="flex items-center gap-2  text-sm font-bold">
+            <div className="  p-2 mt-5">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold ">
+                    {selectedUser.lookingFor}
+                  </h2>
+                  <p className="text-[#9333ea] flex items-center gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="#9333ea"
+                      class="bi bi-geo-alt-fill"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
+                    </svg>
+
+                    {selectedUser.location}
+                  </p>
+                </div>{" "}
+                <p className="text-gray-700 gap-3 items-center flex justify-between">
+                  {/* <strong>File:</strong> */}
+                  <span className="">
+                    <a
+                      href={selectedUser.file}
+                      download
+                      className="inline-flex items-center gap-2 justify-center px-4 py-2 text-sm font-medium text-white bg-[#9737f1] border border-transparent rounded h-8 shadow-sm hover:bg-gray-600"
+                    >
+                      File{" "}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="13"
-                        height="13"
-                        fill="gray"
-                        className="bi bi-geo-alt "
+                        width="18"
+                        height="18"
+                        fill="white"
+                        class="bi bi-cloud-arrow-down-fill"
                         viewBox="0 0 16 16"
                       >
-                        <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
-                        <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                        <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5a.5.5 0 0 1 1 0v3.793l1.146-1.147a.5.5 0 0 1 .708.708" />
                       </svg>
-                      <span className="text-gray-400  gap-2 text-xs font-bold">
-                        {post.location}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {/* Display currency icon */}
-                    <span className="flex items-center">
-                      <span className="bg-green-200 px-2 py-1 rounded-lg text-xs text-primary-foreground font-bold flex items-center">
-                        {getCurrencyIcon(post.currency)}{" "}
-                        {/* Function to get the currency icon */}
-                        {Math.floor(post.budget)}/hr
-                      </span>
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex mt-2 items-center gap-2 text-sm text-muted-foreground">
-                    <span className="bg-gray-200 px-2 py-1 rounded-md text-xs font-bold">
-                      {post.preferredGender}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-gray-500 text-sm mt-3 font-medium overflow-hidden text-ellipsis">
-                  {showFullText[post.id]
-                    ? post.description
-                    : truncateText(post.requirementDescription, wordLimit)}
+                    </a>
+                  </span>
                 </p>
               </div>
-
-              {/* Fixed Footer */}
-              <div className="flex items-center justify-between bg-gray-100 rounded-b-lg px-4 p-2">
-                <div className="flex  items-center justify-between text-xs  font-bold">
-                  <span className="text-gray-500">Application Deadline:</span>
-                </div>
-                <div>
-                  <button
-                    className="bg-gray-600 text-sm p-1 px-3 text-bold text-white font-bold hover:bg-gray-700 rounded-[5px]"
-                    onClick={() => handleOpenModal(post)}
-                  >
-                    View Details
-                  </button>
+              <div className=" ">
+                <div className="lg:grid-cols-3 grid-cols-2 grid gap-4 justify-between mt-10 mb-6">
+                  <div className="flex items-center">
+                    <p className="text-gray-700 bg-[#e2cdf5] w-[200px] text-center flex-col p-2 px-5 rounded-[12px] items-center gap-2">
+                      <span className="text-gray-600">Rate</span>
+                      <div className="flex justify-center">
+                        <span className="rounded-lg text-md text-gray-800  font-bold flex items-center">
+                          {getCurrencyIcon(selectedUser.currency)}
+                          {Math.floor(selectedUser.budget)}
+                          <p className="text-xs text-gray-600">/hr</p>
+                        </span>
+                      </div>
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="text-gray-700 bg-[#faecbf] w-[200px] text-center p-2 px-5 rounded-[12px] flex-col">
+                      <p>Gender</p> {selectedUser.preferredGender}
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="text-gray-700 bg-[#b2c6f8] w-[200px] text-center p-2 px-5 rounded-[12px] flex-col">
+                      <p>Language</p> {selectedUser.language}
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="text-gray-700 bg-[#a1f7a4] w-[200px] text-center p-2 px-5 rounded-[12px] flex-col">
+                      <p>Meeting</p> {selectedUser.meetingPreference}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {selectedPost && (
-        <Modal post={selectedPost} isOpen={true} onClose={handleCloseModal} />
-      )}
+              <div className="mb-3 bg-blue-50 p-4 rounded-lg">
+                <span className="font-semibold">Skills:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {skillsArray.length > 0 ? (
+                    skillsArray.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="bg-blue-100 text-[#9333ea] text-xs font-medium mr-2 px-2.5 py-0.5 rounded"
+                      >
+                        {skill.trim()}
+                      </span>
+                    ))
+                  ) : (
+                    <span>No skills available</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Job Description</h3>
+                <p className="text-gray-500 text-sm mt-3 font-bold">
+                  {selectedUser.requirementDescription}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

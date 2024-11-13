@@ -83,28 +83,28 @@ const Navbar = () => {
             </div>
           </div>
           <nav className="hidden md:flex space-x-4">
-            <a href="/all-requirements">
+            {/* <a href="/all-requirements"> */}
               <div
-                // onClick={(e) => {
-                //   e.preventDefault();
-                //   navigate("/all-requirements");
-                // }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/all-requirements");
+                }}
                 className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
               >
                 All Requirements
               </div>
-            </a>
-            <a href="/service-provider">
+            {/* </a> */}
+            {/* <a href="/service-provider"> */}
               <div
-                // onClick={(e) => {
-                //   e.preventDefault();
-                //   navigate("/service-provider");
-                // }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/service-provider");
+                }}
                 className="text-gray-900 cursor-pointer hover:text-gray-800 px-3 py-2 rounded-md text-sm font-bold"
               >
                 Find Service Provider
               </div>
-            </a>
+            {/* </a> */}
             <div
               onClick={(e) => {
                 e.preventDefault();
